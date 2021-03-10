@@ -3,22 +3,24 @@ import java.util.HashMap;
 
 public class StockExchange {
     private static float numberOfShares;
-    private static HashMap<Company, Float> companies = new HashMap <Company, Float>();
+    private static HashMap<Company, Float> companies = new HashMap <Company, Float>(); //float = numberOfShares
     private ArrayList<Client> clients = new ArrayList<Client>();
 
-    public void StockExchange(){
-
+    public StockExchange(){
+        this.companies = new HashMap<Company, Float>();
+        this.clients = new ArrayList<Client>();
     }
 
-    private static boolean registerCompany(Company company, float numberOfShares){
-        if (companies.containsKey(company)){
-            return false;
+    public static boolean registerCompany(Company company, float numberOfShares){ //available shares
+        if (!companies.containsKey(company)){
+            System.out.println(company.getName() + " has been registered");
+            companies.put(company, numberOfShares);
+            return true;
         }
-        companies.put(company, numberOfShares);
-        return true;
+        return false;
     }
 
-    private static boolean deregisterCompany(Company company){
+    public static boolean deregisterCompany(Company company){
         if (companies.containsKey(company)){
             companies.remove(company);
             return true;
@@ -26,7 +28,7 @@ public class StockExchange {
         return false;
     }
 
-    private boolean addClient(Client client){
+    public boolean addClient(Client client){
         if(clients.contains(client)){
             return false;
         }
@@ -41,5 +43,23 @@ public class StockExchange {
         }
         return false;
     }
+
+    public ArrayList<Client> getClients(){
+        return clients;
+    }
+
+    public HashMap<Company, Float> getCompanies(){
+        return companies;
+    }
+
+
+    public void setPrice(Company company, float startPrice) {
+       company.setPrice(startPrice);
+    }
+
+    public void changePriceBy(Company company, float newPrice){
+        company.setPrice(company.getPrice() + newPrice);
+    }
+
 
 }
