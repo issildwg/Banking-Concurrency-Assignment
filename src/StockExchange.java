@@ -13,8 +13,8 @@ public class StockExchange {
 
     public static boolean registerCompany(Company company, float numberOfShares){ //available shares
         if (!companies.containsKey(company)){
-            System.out.println(company.getName() + " has been registered");
             companies.put(company, numberOfShares);
+            System.out.println(company.getName() + " has been registered to the Stock Exchange with " + companies.get(company) + " shares");
             return true;
         }
         return false;
@@ -23,6 +23,7 @@ public class StockExchange {
     public static boolean deregisterCompany(Company company){
         if (companies.containsKey(company)){
             companies.remove(company);
+            System.out.println(company.getName() + " has been removed from Stock Exchange");
             return true;
         }
         return false;
@@ -33,12 +34,15 @@ public class StockExchange {
             return false;
         }
         clients.add(client);
+        System.out.println(client.getName() + " has been added to the Stock Exchange");
         return true;
     }
 
     public boolean removeClient(Client client){
         if(clients.contains(client)){
             clients.remove(client);
+            System.out.println(client.getName() + " has been removed from Stock Exchange");
+
             return true;
         }
         return false;
@@ -53,12 +57,14 @@ public class StockExchange {
     }
 
 
+
     public void setPrice(Company company, float startPrice) {
        company.setPrice(startPrice);
     }
 
     public void changePriceBy(Company company, float newPrice){
         company.setPrice(company.getPrice() + newPrice);
+        System.out.println(company.getName() + " has changed Stock price to: £" + company.getPrice());
     }
 
 

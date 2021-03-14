@@ -41,7 +41,7 @@ public class Company{
     }
 
     public synchronized float getAvailableShares(){
-        return availableNumberOfShares;
+            return availableNumberOfShares;
     }
 
     public synchronized void setPrice(float price){
