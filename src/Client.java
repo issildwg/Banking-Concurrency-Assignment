@@ -1,10 +1,7 @@
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Client implements Runnable{
     private HashMap<Company, Float> shares;
-    private float sellHigh;
-    private float buyLow;
     private float balance;
     private boolean holdBackSell;
     private boolean holdBackBuy;
@@ -14,13 +11,15 @@ public class Client implements Runnable{
 
 
     public Client() {
+        this.name = "Janet";
+        this.balance = 4500;
+        this.shares = new HashMap<>();
+        this.se = Main.se;                  //change to application
     }
 
-    public Client(String name, float balance, float buyLow, float sellHigh, HashMap shares, StockExchange se) {
+    public Client(String name, float balance, HashMap shares, StockExchange se) {
         this.name = name;
         this.balance = balance;
-        this.buyLow = buyLow;
-        this.sellHigh = sellHigh;
         this.shares = shares;
         this.se = se;
     }
@@ -37,13 +36,11 @@ public class Client implements Runnable{
         return shares;
     }
 
-//who fucking knows - definitely double check this bad boy
-    public boolean setStocks(Company company, float numberOfShares){
+//who fucking knows - definitely double check this bad boy (and the one above)
+    public void setStocks(Company company, float numberOfShares){
         if(shares.containsKey(company)){ //if hashmap contains this company
             shares.put(company, numberOfShares);
-            return true;
         }
-        return false;
     }
 
 
@@ -55,22 +52,22 @@ public class Client implements Runnable{
     }
 
     public synchronized boolean buy(Company company, float numberOfShares) throws InterruptedException {
-        if(balance < (company.getPrice() * numberOfShares)) {   // too little money
+        if(balance < (company.getPrice() * numberOfShares)) {
             System.out.println(Thread.currentThread().getName() + " has insufficient funds");
-        }else if(company.getAvailableShares() < numberOfShares){    //not enough shares
+        }else if(company.getAvailableShares() < numberOfShares){
             System.out.println(company.getName() + " have insufficient shares");
-        } else if (balance >= (company.getPrice() * numberOfShares) && company.getAvailableShares() >= numberOfShares && !onHoldBuy()) { //have funds, available shares them, not on hold
+        } else if (balance >= (company.getPrice() * numberOfShares) && company.getAvailableShares() >= numberOfShares && !onHoldBuy()) {
             holdBackBuy = true;
-
             shares.put(company, numberOfShares);    //doesnt add to previous shares
-
             balance = balance - (company.getPrice() * numberOfShares);
             float updatedShares = company.getAvailableShares() - numberOfShares;
-            company.setAvailableShares(updatedShares);      //this shouldn't be updated if it is being updated in se
-
-            se.getCompanies().put(company, updatedShares);
+            company.setAvailableShares(updatedShares);
+            if (se.getCompanies().containsKey(company)) {
+                se.getCompanies().put(company, updatedShares);
+            }else{
+                se.registerCompany(company, updatedShares);
+            }
             System.out.println(Thread.currentThread().getName() + " just bought " + numberOfShares + " Stocks from " + company.getName() + ", " + se.getCompanies().get(company) + " Stocks remaining in the Stock Exchange");
-
             holdBackBuy = false;
             return true;
         } else {
@@ -89,19 +86,14 @@ public class Client implements Runnable{
             System.out.println(Thread.currentThread().getName() + " has insufficient shares");
         } else if(shares.get(company) < numberOfShares        ){
             System.out.println(Thread.currentThread().getName() + " has insufficient shares");
-        }else if (shares.get(company) >= numberOfShares && !onHoldSell()){ //available shares me, not on hold
+        }else if (shares.get(company) >= numberOfShares && !onHoldSell()){
             holdBackSell = true;
-
             shares.remove(company, numberOfShares);
-
             balance = balance + company.getPrice()*numberOfShares;
             float updatedShares = numberOfShares + company.getAvailableShares();
-            company.setAvailableShares(updatedShares);      //this shouldn't be updated if it is being updated in se
-
+            company.setAvailableShares(updatedShares);
             se.getCompanies().put(company, updatedShares);
-
             System.out.println(Thread.currentThread().getName() + " just sold " + numberOfShares + " back to " + company.getName() + ", " + se.getCompanies().get(company) + " Stocks remaining in the Stock Exchange");
-
             holdBackSell = false;
             return true;
         } else {
@@ -115,8 +107,8 @@ public class Client implements Runnable{
         return false;
     }
 
-    public boolean buyLow(Company company, float numberOfShares) throws InterruptedException {      //removed float buyLow - necessary??
-        if(company.getPrice() <= buyLow){
+    public boolean buyLow(Company company, float numberOfShares, float limit) throws InterruptedException {
+        if(limit <= company.getPrice()){
             System.out.println(Thread.currentThread().getName() + " is trying to buy low: " + numberOfShares + " stocks from " + company.getName());
             buy(company, numberOfShares);
             return true;
@@ -124,8 +116,8 @@ public class Client implements Runnable{
         return false;
     }
 
-    public boolean sellHigh(Company company, float numberOfShares) throws InterruptedException {    //removed float sellHigh - necessary??
-        if(company.getPrice() >= sellHigh){
+    public boolean sellHigh(Company company, float numberOfShares, float limit) throws InterruptedException {
+        if(limit >= company.getPrice()){
             System.out.println(Thread.currentThread().getName() + " is trying to sell high: " + numberOfShares + " stocks from " + company.getName());
             sell(company, numberOfShares);
             return true;
@@ -165,17 +157,15 @@ public class Client implements Runnable{
     public void run() {
 
         System.out.println(Thread.currentThread().getName() + " £" + balance);
-
         Company y = se.getCompanies().keySet().toArray(new Company[0])[getRandomInt(se.getCompanies().size()-1)];
-
         for (Company company :  se.getCompanies().keySet()){
             try {
-                buyLow(company, 5);
+                buyLow(company, 5, 10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             try {
-                sellHigh(company, 5);
+                sellHigh(company, 5, 30);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -187,7 +177,7 @@ public class Client implements Runnable{
             buy(y, z);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }   //buy rand at rand price
+        }
 
 
         try {
@@ -196,7 +186,7 @@ public class Client implements Runnable{
             sell(y, z);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }   //sell rand at rand price
+        }
 
         System.out.println(Thread.currentThread().getName() + " £" +  balance);
     }

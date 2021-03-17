@@ -3,12 +3,12 @@ import java.util.HashMap;
 
 public class StockExchange {
     private static float numberOfShares;
-    private static HashMap<Company, Float> companies = new HashMap <Company, Float>(); //float = numberOfShares
-    private ArrayList<Client> clients = new ArrayList<Client>();
+    private static HashMap<Company, Float> companies = new HashMap<>(); //float = numberOfShares
+    private ArrayList<Client> clients;
 
     public StockExchange(){
-        this.companies = new HashMap<Company, Float>();
-        this.clients = new ArrayList<Client>();
+        this.companies = new HashMap<>();
+        this.clients = new ArrayList<>();
     }
 
     public static boolean registerCompany(Company company, float numberOfShares){ //available shares

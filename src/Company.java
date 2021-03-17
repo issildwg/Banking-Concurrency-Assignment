@@ -4,6 +4,12 @@ public class Company{
     private float availableNumberOfShares;
     private float price;
 
+    public Company(){
+        this.name = "Sony";
+        this.totalNumberOfShares = 100;
+        this.availableNumberOfShares = 75;
+        this.price = 45;
+    }
 
     public Company(String name, float totalNumberOfShares, float availableNumberOfShares, float price){
         this.name = name;
@@ -12,12 +18,11 @@ public class Company{
         this.price = price;
     }
 
-    public Company(){
 
-    }
 
-    public synchronized void setName(String name){
-        this.name = name;
+    public synchronized void setName(String newName){
+        System.out.println(name + " changed name to: " + newName);
+        this.name = newName;
     }
 
     public synchronized String getName(){
@@ -44,6 +49,10 @@ public class Company{
             return availableNumberOfShares;
     }
 
+    public synchronized float getPrice(){
+        return price;
+    }
+
     public synchronized void setPrice(float price){
         if (price <= 0){
             System.out.println("Error! negative price cannot be accepted");
@@ -52,9 +61,6 @@ public class Company{
         }
     }
 
-    public synchronized float getPrice(){
-        return price;
-    }
 
 }
 
