@@ -14,7 +14,7 @@ public class Client implements Runnable{
         this.name = "Janet";
         this.balance = 4500;
         this.shares = new HashMap<>();
-        this.se = Application.se;                  //change to application
+        this.se = Application.se;
     }
 
     public Client(String name, float balance, HashMap shares, StockExchange se) {
@@ -36,9 +36,8 @@ public class Client implements Runnable{
         return shares;
     }
 
-//who fucking knows - definitely double check this bad boy (and the one above)
     public void setStocks(Company company, float numberOfShares){
-        if(shares.containsKey(company)){ //if hashmap contains this company
+        if(shares.containsKey(company)){
             shares.put(company, numberOfShares);
         }
     }
@@ -58,14 +57,13 @@ public class Client implements Runnable{
             System.out.println(company.getName() + " have insufficient shares");
         } else if (balance >= (company.getPrice() * numberOfShares) && company.getAvailableShares() >= numberOfShares && !onHoldBuy()) {
             holdBackBuy = true;
-            shares.put(company, numberOfShares);    //doesnt add to previous shares
+            shares.put(company, numberOfShares);
             balance = balance - (company.getPrice() * numberOfShares);
             float updatedShares = company.getAvailableShares() - numberOfShares;
             company.setAvailableShares(updatedShares);
             if (se.getCompanies().containsKey(company)) {
                 se.getCompanies().put(company, updatedShares);
             }else{
-                //TODO do they exist in the actual hashmap?
                 se.registerCompany(company, updatedShares);
             }
             System.out.println(Thread.currentThread().getName() + " just bought " + numberOfShares + " Stocks from " + company.getName() + ", " + se.getCompanies().get(company) + " Stocks remaining in the Stock Exchange");
@@ -129,7 +127,7 @@ public class Client implements Runnable{
             sell(company, numberOfShares);
             return true;
         }else{
-            while(limit >= company.getPrice()) {
+            while(limit <= company.getPrice()) {
                 wait();
                 sell(company, numberOfShares);
                 notifyAll();

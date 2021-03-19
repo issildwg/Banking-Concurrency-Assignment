@@ -3,7 +3,7 @@ import java.util.HashMap;
 
 public class StockExchange {
     private static float numberOfShares;
-    private static HashMap<Company, Float> companies = new HashMap<>(); //float = numberOfShares
+    private static HashMap<Company, Float> companies = new HashMap<>();
     private ArrayList<Client> clients;
 
     public StockExchange(){
@@ -11,7 +11,7 @@ public class StockExchange {
         this.clients = new ArrayList<>();
     }
 
-    public static boolean registerCompany(Company company, float numberOfShares){ //available shares
+    public static boolean registerCompany(Company company, float numberOfShares){
         if (!companies.containsKey(company)){
             companies.put(company, numberOfShares);
             System.out.println(company.getName() + " has been registered to the Stock Exchange with " + companies.get(company) + " shares");
