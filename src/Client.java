@@ -14,7 +14,7 @@ public class Client implements Runnable{
         this.name = "Janet";
         this.balance = 4500;
         this.shares = new HashMap<>();
-        this.se = Main.se;                  //change to application
+        this.se = Application.se;                  //change to application
     }
 
     public Client(String name, float balance, HashMap shares, StockExchange se) {
@@ -65,6 +65,7 @@ public class Client implements Runnable{
             if (se.getCompanies().containsKey(company)) {
                 se.getCompanies().put(company, updatedShares);
             }else{
+                //TODO do they exist in the actual hashmap?
                 se.registerCompany(company, updatedShares);
             }
             System.out.println(Thread.currentThread().getName() + " just bought " + numberOfShares + " Stocks from " + company.getName() + ", " + se.getCompanies().get(company) + " Stocks remaining in the Stock Exchange");
@@ -84,7 +85,7 @@ public class Client implements Runnable{
     public synchronized boolean sell(Company company, float numberOfShares) throws InterruptedException {
         if(shares.getOrDefault(company, 0f) == 0) {
             System.out.println(Thread.currentThread().getName() + " has insufficient shares");
-        } else if(shares.get(company) < numberOfShares        ){
+        } else if(shares.get(company) < numberOfShares){
             System.out.println(Thread.currentThread().getName() + " has insufficient shares");
         }else if (shares.get(company) >= numberOfShares && !onHoldSell()){
             holdBackSell = true;
@@ -112,15 +113,27 @@ public class Client implements Runnable{
             System.out.println(Thread.currentThread().getName() + " is trying to buy low: " + numberOfShares + " stocks from " + company.getName());
             buy(company, numberOfShares);
             return true;
+        }else{
+            while(limit <= company.getPrice()) {
+                wait();
+                buy(company, numberOfShares);
+                notifyAll();
+            }
         }
         return false;
     }
 
     public boolean sellHigh(Company company, float numberOfShares, float limit) throws InterruptedException {
         if(limit >= company.getPrice()){
-            System.out.println(Thread.currentThread().getName() + " is trying to sell high: " + numberOfShares + " stocks from " + company.getName());
+            System.out.println(Thread.currentThread().getName() + " is trying to sell high: " + numberOfShares + " stocks back to " + company.getName());
             sell(company, numberOfShares);
             return true;
+        }else{
+            while(limit >= company.getPrice()) {
+                wait();
+                sell(company, numberOfShares);
+                notifyAll();
+            }
         }
         return false;
     }

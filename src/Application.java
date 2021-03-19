@@ -1,9 +1,6 @@
-import javax.xml.bind.SchemaOutputResolver;
-import java.security.Key;
-import java.util.Arrays;
 import java.util.HashMap;
 
-public class Main {
+public class Application {
     public static StockExchange se = new StockExchange();
 
     public static void main(String args[]) throws InterruptedException {
@@ -13,12 +10,10 @@ public class Main {
         Company windows = new Company("windows", 100, 100, 21);
         Company intel = new Company("intel", 100, 100, 43);
 
-
         se.registerCompany(apple, apple.getAvailableShares());
         se.registerCompany(samsung, samsung.getAvailableShares());
         se.registerCompany(windows, windows.getAvailableShares());
         se.registerCompany(intel, intel.getAvailableShares());
-
 
         Client sue = new Client("sue", 5000, new HashMap<Company, Float>(), se);
         Client jim = new Client("jim", 5, new HashMap<Company, Float>(), se);
@@ -31,17 +26,20 @@ public class Main {
         se.addClient(hubert);
 
         System.out.print("Companies in stock exchange:  ");
+
         for (Company company :  se.getCompanies().keySet()){
             System.out.print(company.getName() + ":" + se.getCompanies().get(company) + "  "); //name, shares
         }
+
         System.out.println("");
         System.out.print("Clients in stock exchange:  ");
+
         for(Client client : se.getClients()) {
             System.out.print(client.getName() + "  ");
         }
+
         System.out.println(" ");
 
-        se.changePriceBy(windows, -15);
 
         Thread one = new Thread(sue);
         Thread two = new Thread(jim);
@@ -52,15 +50,18 @@ public class Main {
             three.setName("clarke");
             four.setName("hubert");
 
-        one.start();//opens thread one              REMOVE SLEEP WHEN SUBMITTING - they might not like it (make the output less all over the place
-        //Thread.sleep(1000);
+        one.start();
+        Thread.sleep(1000);
         two.start();
-        //Thread.sleep(1000);
+        Thread.sleep(1000);
         three.start();
-        //Thread.sleep(1000);
+        Thread.sleep(1000);
         four.start();
-        //Thread.sleep(1000);
-        one.join();     //closes thread one
+        Thread.sleep(1000);
+
+        se.changePriceBy(windows, -15);
+
+        one.join();
         two.join();
         three.join();
         four.join();
