@@ -52,19 +52,25 @@ public class StockExchange {
         return clients;
     }
 
-    public HashMap<Company, Float> getCompanies(){
+    public  HashMap<Company, Float> getCompanies(){
         return companies;
     }
-
 
 
     public void setPrice(Company company, float startPrice) {
        company.setPrice(startPrice);
     }
 
-    public void changePriceBy(Company company, float newPrice){
+    public synchronized void changePriceBy(Company company, float newPrice) throws InterruptedException {
         company.setPrice(company.getPrice() + newPrice);
+        setPrice(company, company.getPrice());
         System.out.println(company.getName() + " has changed Stock price to: £" + company.getPrice());
+
+        for(Client client : getClients()) {
+            System.out.println(client.getName());
+            client.buyLow(company, client.getLowShares(), client.getLowLim());
+            client.sellHigh(company, client.getHighShares(), client.getHighLim());
+        }
     }
 
 

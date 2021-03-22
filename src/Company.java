@@ -59,6 +59,7 @@ public class Company{
         } else {
             this.price = price;
         }
+        notifyAll();
     }
 
 

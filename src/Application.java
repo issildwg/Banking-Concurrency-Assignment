@@ -50,16 +50,23 @@ public class Application {
             three.setName("clarke");
             four.setName("hubert");
 
+       //TODO use a listener either here or after the thread starts
+
         one.start();
         Thread.sleep(1000);
         two.start();
         Thread.sleep(1000);
+        se.changePriceBy(samsung, -10);
         three.start();
         Thread.sleep(1000);
         four.start();
         Thread.sleep(1000);
 
-        se.changePriceBy(windows, -15);
+        se.changePriceBy(intel, -40);
+        se.changePriceBy(apple, -15);
+        se.changePriceBy(windows, -11);
+
+        se.changePriceBy(windows, 15);
 
         one.join();
         two.join();
@@ -68,7 +75,7 @@ public class Application {
 
 
         se.deregisterCompany(windows);
-        se.removeClient(sue);
+     //   se.removeClient(sue);
         hubert.deposit(78);
         clarke.withdraw(12);
         apple.setName("Apple");

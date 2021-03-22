@@ -1,3 +1,4 @@
+import java.util.EventListener;
 import java.util.HashMap;
 
 public class Client implements Runnable{
@@ -6,6 +7,12 @@ public class Client implements Runnable{
     private boolean holdBackSell;
     private boolean holdBackBuy;
     private String name;
+
+    private static float lowLim;
+    private static float highLim;
+    private static float lowShares;
+    private static float highShares;
+
 
     StockExchange se;
 
@@ -32,6 +39,23 @@ public class Client implements Runnable{
         return balance;
     }
 
+    public float getLowLim(){
+        return lowLim;
+    }
+
+    public float getHighLim(){
+        return highLim;
+    }
+
+    public float getLowShares(){
+        return lowShares;
+    }
+
+    public float getHighShares(){
+        return highShares;
+    }
+
+
     public HashMap<Company, Float> getStocks(){
         return shares;
     }
@@ -50,12 +74,14 @@ public class Client implements Runnable{
         return holdBackSell;
     }
 
+
+
     public synchronized boolean buy(Company company, float numberOfShares) throws InterruptedException {
-        if(balance < (company.getPrice() * numberOfShares)) {
+        if(balance < (company.getPrice() * numberOfShares)) {               //balance too low
             System.out.println(Thread.currentThread().getName() + " has insufficient funds");
-        }else if(company.getAvailableShares() < numberOfShares){
+        }else if(company.getAvailableShares() < numberOfShares){            //not enough shares
             System.out.println(company.getName() + " have insufficient shares");
-        } else if (balance >= (company.getPrice() * numberOfShares) && company.getAvailableShares() >= numberOfShares && !onHoldBuy()) {
+        } else if (balance >= (company.getPrice() * numberOfShares) && company.getAvailableShares() >= numberOfShares && !onHoldBuy()) {    //all good vibes - can buy
             holdBackBuy = true;
             shares.put(company, numberOfShares);
             balance = balance - (company.getPrice() * numberOfShares);
@@ -70,9 +96,9 @@ public class Client implements Runnable{
             holdBackBuy = false;
             return true;
         } else {
-            while (onHoldBuy()) {
+            while (onHoldBuy()) {       //stock on hold
                 System.out.println("Error! Stock cant be bought at this time, please hold");
-                wait();
+                Thread.currentThread().wait();
                 buy(company, numberOfShares);
             }
         }
@@ -98,7 +124,7 @@ public class Client implements Runnable{
         } else {
             while (onHoldSell()) {
                 System.out.println("Error! Stock cant be sold at this time, please hold");
-                wait();
+                Thread.currentThread().wait();
                 sell(company, numberOfShares);
             }
         }
@@ -106,34 +132,50 @@ public class Client implements Runnable{
         return false;
     }
 
-    public boolean buyLow(Company company, float numberOfShares, float limit) throws InterruptedException {
-        if(limit <= company.getPrice()){
+    public synchronized boolean buyLow(Company company, float numberOfShares, float limit) throws InterruptedException {
+        this.lowLim = limit;
+        this.lowShares = numberOfShares;
+
+        if(limit >= company.getPrice()) {
             System.out.println(Thread.currentThread().getName() + " is trying to buy low: " + numberOfShares + " stocks from " + company.getName());
             buy(company, numberOfShares);
             return true;
-        }else{
-            while(limit <= company.getPrice()) {
-                wait();
-                buy(company, numberOfShares);
-                notifyAll();
-            }
         }
         return false;
+       /*
+        else{
+            while(limit < company.getPrice()){
+
+                Thread.currentThread().sleep(1);
+                //its getting caught in here - WHAT DO I FUCKING DO TO FIX THIS SHIT?????????????
+            }
+            buyLow(company, numberOfShares, limit);
+            return false;
+        }
+        */
     }
 
-    public boolean sellHigh(Company company, float numberOfShares, float limit) throws InterruptedException {
-        if(limit >= company.getPrice()){
+    public synchronized boolean sellHigh(Company company, float numberOfShares, float limit) throws InterruptedException {
+        this.highLim = limit;
+        this.highShares = numberOfShares;
+
+        if(limit <= company.getPrice()){
             System.out.println(Thread.currentThread().getName() + " is trying to sell high: " + numberOfShares + " stocks back to " + company.getName());
             sell(company, numberOfShares);
             return true;
-        }else{
-            while(limit <= company.getPrice()) {
-                wait();
-                sell(company, numberOfShares);
-                notifyAll();
-            }
         }
         return false;
+        /*
+        else{
+            while(limit > company.getPrice()){
+                Thread.currentThread().sleep(1);
+                //its getting caught in here - WHAT DO I FUCKING DO TO FIX THIS SHIT?????????????
+            }
+            sellHigh(company, numberOfShares, limit);
+            return false;
+        }
+         */
+
     }
 
     public boolean deposit(float amount){
@@ -169,12 +211,17 @@ public class Client implements Runnable{
 
         System.out.println(Thread.currentThread().getName() + " £" + balance);
         Company y = se.getCompanies().keySet().toArray(new Company[0])[getRandomInt(se.getCompanies().size()-1)];
+
+        //TODO i think i can wipe this section out if i follow the other idea - keep for now
+
+
         for (Company company :  se.getCompanies().keySet()){
             try {
                 buyLow(company, 5, 10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
             try {
                 sellHigh(company, 5, 30);
             } catch (InterruptedException e) {
@@ -200,5 +247,6 @@ public class Client implements Runnable{
         }
 
         System.out.println(Thread.currentThread().getName() + " £" +  balance);
+
     }
 }
